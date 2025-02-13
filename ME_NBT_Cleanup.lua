@@ -12,7 +12,7 @@
 
 -- Side or name of the ME Bridge peripheral.
 -- Adjust if it's on a different side (e.g., "left", "right", "back", etc.).
-local ME_BRIDGE_SIDE = "back"
+local ME_BRIDGE_SIDE = "front"
 
 -- How many items to export at once. 64 is typically safe for a single slot.
 local EXPORT_BATCH_SIZE = 64
@@ -97,8 +97,7 @@ local function cleanupME()
       end
     end
   end
-
-  print("ME cleanup complete!")
+print("ME cleanup complete!")
 end
 
 -------------------------------------
