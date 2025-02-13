@@ -24,7 +24,8 @@ function clearME()
         for _, name in ipairs(blacklist) do
             if string.find(item.name, name) then
                 local count = item.amount
-                if item.name ~= nil then
+                if item.name ~= nil and item.amount ~= nil then
+    		    local count = item.amount -- Ensure count is properly set
                     local exported = me.exportItem({name = item.name, count = count})
                     if exported then
                         for slot = 1, 16 do
@@ -35,7 +36,6 @@ function clearME()
                         end
                     end
                 end
-
     for slot = 1, 16 do  -- Check all Turtle inventory slots
         turtle.select(slot)
         if turtle.getItemCount() > 0 then
@@ -43,11 +43,14 @@ function clearME()
         end
     end
 end
-                print("Removed " .. count .. " of " .. item.name)
+                if count ~= nil then
+                    print("Removed " .. count .. " of " .. item.name)
+                else
+                    print("Error: Could not retrieve count for " .. (item.name or "unknown item"))
+                end
             end
         end
     end
-end
 -- Run cleanup every 30 seconds
 while true do
     clearME()
