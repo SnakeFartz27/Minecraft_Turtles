@@ -60,7 +60,7 @@ local function cleanupME()
 
   -- 3.2) Loop through each item and see if it's blacklisted.
   for _, item in ipairs(items) do
-    print(textutils.serialize(item))
+      print(textutils.serialize(item))
       -- 3.2a) Calculate how many total we have to remove.
       local toRemove = item.count
 
@@ -96,7 +96,6 @@ local function cleanupME()
         end
       end
     end
-  end
 print("ME cleanup complete!")
 end
 
