@@ -20,12 +20,18 @@ local EXPORT_BATCH_SIZE = 64
 -- Interval in seconds between cleanup runs.
 local SCAN_INTERVAL = 30
 
--- Blacklist: Items you want to remove from the ME system.
--- Add or remove item IDs as needed. The exact ID format depends on your modpack.
+-- Blacklist: Items you want to remove from the ME system by exact item name.
+-- For example, "minecraft:enchanted_book"
 local blacklist = {
-  "minecraft:enchanted_book",   -- Example; you might need exact item names/IDs.
+  "minecraft:enchanted_book",
+}
+
+-- Tag keywords you want to remove (Method 3):
+-- e.g., if an item has "forge:shovels" or "forge:tools" in its tags, remove it.
+local TAG_KEYWORDS = {
+  "forge:shovels",
   "forge:tools",
-  "forge:swords",
+  -- add more strings if needed
 }
 
 -------------------------------------
@@ -38,13 +44,47 @@ if not meBridge then
   error("Could not find ME Bridge on side: " .. ME_BRIDGE_SIDE)
 end
 
--- Function to check if an item name is blacklisted.
-local function isBlacklisted(itemName)
+-- Check if the item name is explicitly in the 'blacklist' table.
+local function isNameBlacklisted(itemName)
   for _, blacklistedName in ipairs(blacklist) do
     if itemName == blacklistedName then
       return true
     end
   end
+  return false
+end
+
+-- Check if an item has any of the tags we care about (Method 3).
+local function hasTagKeyword(item, keywords)
+  -- If the item doesn't have a 'tags' table or it's empty, skip
+  if not item.tags then return false end
+
+  -- The mod might store tags like: tags = { "minecraft:item/forge:shovels", ... }
+  -- We can search each string for our keyword(s).
+  for _, tagString in pairs(item.tags) do
+    for _, keyword in ipairs(keywords) do
+      if string.find(tagString, keyword) then
+        return true
+      end
+    end
+  end
+
+  return false
+end
+
+-- Our master function to decide whether an item should be removed.
+local function isBlacklisted(item)
+  -- 1) If it's in the name-based blacklist, remove it
+  if isNameBlacklisted(item.name) then
+    return true
+  end
+
+  -- 2) If it has any matching tag keywords, remove it
+  if hasTagKeyword(item, TAG_KEYWORDS) then
+    return true
+  end
+
+  -- Otherwise, not blacklisted
   return false
 end
 
@@ -58,75 +98,23 @@ local function cleanupME()
 
   -- 3.1) Get list of all items in the ME system.
   --     Adjust function call if your mod uses a different naming convention.
-  local items = meBridge.listItems()  -- e.g., returns { {name="", amount=...}, ... }
+  local items = meBridge.listItems()  -- e.g., returns { {name="", amount=..., tags={...}}, ... }
 
-  -- 3.2) Loop through each item and see if it's blacklisted.
+  -- 3.2) Loop through each item and see if it's blacklisted (either by name or tag).
   for _, item in ipairs(items) do
-
-      -- 3.2aa) Actually checks if item is blacklisted.
-      if isBlacklisted(item.name) then
+    if isBlacklisted(item) then
       -- 3.2a) Calculate how many total we have to remove.
-        local toRemove = item.amount
-
-        print("Removing " .. toRemove .. " of " .. item.name .. "...")
+      local toRemove = item.amount or 0
+      print("Removing " .. toRemove .. " of " .. item.name .. "...")
 
       -- 3.2b) While there are still items to remove, export in batches.
-        while toRemove > 0 do
-        
-        -- Select a turtle slot (1–16). We’ll assume slot 1 for simplicity,
-        -- but you could cycle through multiple slots if needed.
-          turtle.select(1)
+      while toRemove > 0 do
+        -- Select a turtle slot (1–16). 
+        turtle.select(1)
 
         -- Determine how many items to export this pass (up to 64).
-          local exportAmount = math.min(EXPORT_BATCH_SIZE, toRemove)
+        local exportAmount = math.min(EXPORT_BATCH_SIZE, toRemove)
 
         -- Export items into the Turtle from the ME system.
-        -- Adjust function if your mod has a different call pattern (e.g. exportItemToPeripheral).
-          local exported = meBridge.exportItem(
-            { name = item.name },  -- The item filter table (name, NBT, etc.)
-            "west",              -- Destination: the Turtle’s inventory
-            exportAmount           -- How many to export this time
-          )
-
-          if exported and exported > 0 then
-          -- Drop the items below the Turtle (into a chest or trash).
-            turtle.dropDown()
-          -- Decrease remaining count.
-            toRemove = toRemove - exported
-          else
-          -- If nothing was exported, break to avoid possible infinite loops.
-            print("Failed to export: " .. item.name)
-            break
-          end
-        end
-      end
-    end
-
----------------------------------------------------------------------------
-  --  NOW cycle through all turtle slots and drop anything still inside.
-  ---------------------------------------------------------------------------
-  print("Dropping leftover items from the Turtle's inventory...")
-  for slot = 1, 16 do
-    turtle.select(slot)
-    local itemCount = turtle.getItemCount(slot)
-    if itemCount > 0 then
-      turtle.dropDown()  -- deposit to the chest below
-    end
-  end
-  
-print("ME cleanup complete!")
-print("Sleepy Time!")
-end
-
--------------------------------------
--- 4) Main Loop
--------------------------------------
-
--- Run cleanup in a perpetual loop with a pause.
-while true do
-  -- Perform a cleanup pass.
-  cleanupME()
-
-  -- Wait for the specified interval before running again.
-  sleep(SCAN_INTERVAL)
-end
+        local exported = meBridge.exportItem(
+          { name = i
