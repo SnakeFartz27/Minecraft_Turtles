@@ -5,7 +5,6 @@ if not me then
     print("No ME system found!")
     return
 end
-
 -- List of NBT-heavy items to remove (Modify this as needed)
 local blacklist = {
     "minecraft:enchanted_book",
@@ -18,7 +17,6 @@ local blacklist = {
     "sophisticatedbackpacks:backpack",
     "tetra:modular_tool"
 }
-
 -- Function to remove blacklisted items
 function clearME()
     local items = me.listItems() -- Get all items in the ME system
@@ -26,13 +24,19 @@ function clearME()
         for _, name in ipairs(blacklist) do
             if string.find(item.name, name) then
                 local count = item.amount
-                me.exportItem({name = item.name, count = count}, "DOWN") -- Drops into a chest or trash below
+                if me.exportItem({name = item.name, count = count}) then
+    for slot = 1, 16 do  -- Check all Turtle inventory slots
+        turtle.select(slot)
+        if turtle.getItemCount() > 0 then
+            turtle.dropDown() -- Drops the item into a chest below
+        end
+    end
+end
                 print("Removed " .. count .. " of " .. item.name)
             end
         end
     end
 end
-
 -- Run cleanup every 30 seconds
 while true do
     clearME()
