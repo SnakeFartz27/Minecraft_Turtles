@@ -80,7 +80,7 @@ local function cleanupME()
         -- Adjust function if your mod has a different call pattern (e.g. exportItemToPeripheral).
         local exported = meBridge.exportItem(
           { name = item.name },  -- The item filter table (name, NBT, etc.)
-          "turtle",              -- Destination: the Turtle’s inventory
+          "west",              -- Destination: the Turtle’s inventory
           exportAmount           -- How many to export this time
         )
 
