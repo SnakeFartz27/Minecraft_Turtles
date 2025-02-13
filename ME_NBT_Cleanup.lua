@@ -117,4 +117,46 @@ local function cleanupME()
 
         -- Export items into the Turtle from the ME system.
         local exported = meBridge.exportItem(
-          { name = i
+          { name = item.name }, -- item filter table
+          "west",               -- Destination side/peripheral
+          exportAmount
+        )
+
+        -- 'exported' is a number, how many items were successfully exported
+        if exported and exported > 0 then
+          -- Drop the items below the Turtle (into a chest or trash).
+          turtle.dropDown()
+          -- Decrease remaining count.
+          toRemove = toRemove - exported
+        else
+          print("Failed to export: " .. item.name)
+          break
+        end
+      end
+    end
+  end
+
+  ---------------------------------------------------------------------------
+  -- At the end, cycle through all turtle slots and drop anything still inside.
+  ---------------------------------------------------------------------------
+  print("Dropping leftover items from the Turtle's inventory...")
+  for slot = 1, 16 do
+    turtle.select(slot)
+    local itemCount = turtle.getItemCount(slot)
+    if itemCount > 0 then
+      turtle.dropDown()  -- deposit to the chest below
+    end
+  end
+
+  print("ME cleanup complete!")
+  print("Sleepy Time!")
+end
+
+-------------------------------------
+-- 4) Main Loop
+-------------------------------------
+
+while true do
+  cleanupME()
+  sleep(SCAN_INTERVAL)
+end
