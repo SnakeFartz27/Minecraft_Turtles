@@ -26,7 +26,7 @@ function clearME()
         for _, name in ipairs(blacklist) do
             if string.find(item.name, name) then
                 local count = item.amount
-                me.extractItem({name = item.name, count = count}, "down") -- Drops into a chest or trash below
+                me.exportItem({name = item.name, count = count}, "DOWN") -- Drops into a chest or trash below
                 print("Removed " .. count .. " of " .. item.name)
             end
         end
