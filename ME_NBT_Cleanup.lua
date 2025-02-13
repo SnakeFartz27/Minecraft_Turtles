@@ -24,6 +24,8 @@ local SCAN_INTERVAL = 30
 -- Add or remove item IDs as needed. The exact ID format depends on your modpack.
 local blacklist = {
   "minecraft:enchanted_book",   -- Example; you might need exact item names/IDs.
+  "forge:tools",
+  "forge:swords",
 }
 
 -------------------------------------
