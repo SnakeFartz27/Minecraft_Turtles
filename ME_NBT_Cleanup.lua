@@ -24,7 +24,18 @@ function clearME()
         for _, name in ipairs(blacklist) do
             if string.find(item.name, name) then
                 local count = item.amount
-                if me.exportItem({name = item.name, count = count}) then
+                if item.name ~= nil then
+                    local exported = me.exportItem({name = item.name, count = count})
+                    if exported then
+                        for slot = 1, 16 do
+                            turtle.select(slot)
+                            if turtle.getItemCount() > 0 then
+                                turtle.dropDown() -- Drops items into the chest below
+                            end
+                        end
+                    end
+                end
+
     for slot = 1, 16 do  -- Check all Turtle inventory slots
         turtle.select(slot)
         if turtle.getItemCount() > 0 then
