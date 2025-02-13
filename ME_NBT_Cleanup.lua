@@ -61,38 +61,42 @@ local function cleanupME()
   -- 3.2) Loop through each item and see if it's blacklisted.
   for _, item in ipairs(items) do
       print(textutils.serialize(item))
-      -- 3.2a) Calculate how many total we have to remove.
-      local toRemove = item.amount
 
-      print("Removing " .. toRemove .. " of " .. item.name .. "...")
+      -- 3.2aa) Actually checks if item is blacklisted.
+      if isBlacklisted(item.name) then
+      -- 3.2a) Calculate how many total we have to remove.
+        local toRemove = item.amount
+
+        print("Removing " .. toRemove .. " of " .. item.name .. "...")
 
       -- 3.2b) While there are still items to remove, export in batches.
-      while toRemove > 0 do
+        while toRemove > 0 do
         
         -- Select a turtle slot (1–16). We’ll assume slot 1 for simplicity,
         -- but you could cycle through multiple slots if needed.
-        turtle.select(1)
+          turtle.select(1)
 
         -- Determine how many items to export this pass (up to 64).
-        local exportAmount = math.min(EXPORT_BATCH_SIZE, toRemove)
+          local exportAmount = math.min(EXPORT_BATCH_SIZE, toRemove)
 
         -- Export items into the Turtle from the ME system.
         -- Adjust function if your mod has a different call pattern (e.g. exportItemToPeripheral).
-        local exported = meBridge.exportItem(
-          { name = item.name },  -- The item filter table (name, NBT, etc.)
-          "west",              -- Destination: the Turtle’s inventory
-          exportAmount           -- How many to export this time
-        )
+          local exported = meBridge.exportItem(
+            { name = item.name },  -- The item filter table (name, NBT, etc.)
+            "west",              -- Destination: the Turtle’s inventory
+            exportAmount           -- How many to export this time
+          )
 
-        if exported and exported > 0 then
+          if exported and exported > 0 then
           -- Drop the items below the Turtle (into a chest or trash).
-          turtle.dropDown()
+            turtle.dropDown()
           -- Decrease remaining count.
-          toRemove = toRemove - exported
-        else
+            toRemove = toRemove - exported
+          else
           -- If nothing was exported, break to avoid possible infinite loops.
-          print("Failed to export: " .. item.name)
-          break
+            print("Failed to export: " .. item.name)
+            break
+          end
         end
       end
     end
