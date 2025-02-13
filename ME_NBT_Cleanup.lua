@@ -60,7 +60,6 @@ local function cleanupME()
 
   -- 3.2) Loop through each item and see if it's blacklisted.
   for _, item in ipairs(items) do
-      print(textutils.serialize(item))
 
       -- 3.2aa) Actually checks if item is blacklisted.
       if isBlacklisted(item.name) then
@@ -100,7 +99,21 @@ local function cleanupME()
         end
       end
     end
+
+---------------------------------------------------------------------------
+  --  NOW cycle through all turtle slots and drop anything still inside.
+  ---------------------------------------------------------------------------
+  print("Dropping leftover items from the Turtle's inventory...")
+  for slot = 1, 16 do
+    turtle.select(slot)
+    local itemCount = turtle.getItemCount(slot)
+    if itemCount > 0 then
+      turtle.dropDown()  -- deposit to the chest below
+    end
+  end
+  
 print("ME cleanup complete!")
+print("Sleepy Time!")
 end
 
 -------------------------------------
