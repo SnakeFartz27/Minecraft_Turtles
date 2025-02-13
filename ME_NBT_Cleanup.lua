@@ -84,11 +84,11 @@ local function cleanupME()
           exportAmount           -- How many to export this time
         )
 
-        if exported and exported.size > 0 then
+        if exported and exported > 0 then
           -- Drop the items below the Turtle (into a chest or trash).
           turtle.dropDown()
           -- Decrease remaining count.
-          toRemove = toRemove - exported.size
+          toRemove = toRemove - exported
         else
           -- If nothing was exported, break to avoid possible infinite loops.
           print("Failed to export: " .. item.name)
